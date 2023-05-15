@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corretor de Textos Científicos</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/textprocessor.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha384-..." crossorigin="anonymous">
+
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row mt-5">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <h2 class="text-center mb-4">Corretor de Textos Científicos</h2>
+                <div class="form-group">
+                    <label for="original_text">Texto Original:</label>
+                    <textarea class="form-control" rows="10" id="original_text"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="score">Pontuação do Texto:</label>
+                    <input type="text" class="form-control" id="score" readonly>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" onclick="processText()">Processar Texto</button>
+                <hr>
+                <label for="highlighted_text">Erros Idenificados !</label>
+                <div id="highlighted_text">
+                    <div id="long_sentence_errors"></div>
+                    <div id="personal_speech_errors"></div>
+                    <div id="subject_verb_predicate"></div>
+                    <div id="repeated_words_errors"></div>
+                    <div id="paragraph_errors"></div>
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+    <script>
+        function processText() {
+            var original_text = document.getElementById("original_text").value;
+            var text_processor = new TextProcessor(original_text);
+            var long_sentence_errors = text_processor.getHighlightedTextLongPeriods();
+            var personal_speech_errors = text_processor.getHighlightedTextPersonalSpeech();
+            var subject_verb_predicate = text_processor.getHighlightedTextSubjectVerbPredicateErrors();
+            var repeated_words_errors = text_processor.getHighlightedTextRepeatedWords();
+            var paragraph_errors = text_processor.getHighlightedTextParagraphLength();
+            var score = text_processor.getScore();
+
+            var highlighted_text = '';
+
+            // Adiciona destaque para períodos longos
+            highlighted_text += '<span class="long-sentence">' + long_sentence_errors + '</span>';
+
+            // Adiciona destaque para parágrafos com menos de 7 ou mais de 10 linhas
+            highlighted_text += '<span class="paragraph-error">' + paragraph_errors + '</span>';
+
+            // Adiciona destaque para erros de discurso pessoal
+            highlighted_text += '<span class="personal-speech-error">' + personal_speech_errors + '</span>';
+
+            // Adiciona destaque para sentenças que não seguem o padrão sujeito-verbo-predicado
+            highlighted_text += '<span class="subject-verb-predicate">' + subject_verb_predicate + '</span>';
+
+            // Adiciona destaque para palavras repetidas
+            highlighted_text += '<span class="repeated-words-error">' + repeated_words_errors + '</span>';
+
+            if (document.getElementById("long_sentence_errors")) {
+                document.getElementById("long_sentence_errors").innerHTML = long_sentence_errors;
+            }
+
+            if (document.getElementById("paragraph_errors")) {
+                document.getElementById("paragraph_errors").innerHTML = paragraph_errors;
+            }
+
+            if (document.getElementById("personal_speech_errors")) {
+                document.getElementById("personal_speech_errors").innerHTML = personal_speech_errors;
+            }
+
+            if (document.getElementById("subject_verb_predicate")) {
+                document.getElementById("subject_verb_predicate").innerHTML = subject_verb_predicate;
+            }
+
+            if (document.getElementById("repeated_words_errors")) {
+                document.getElementById("repeated_words_errors").innerHTML = repeated_words_errors;
+            }
+
+            if (document.getElementById("highlighted_text")) {
+                document.getElementById("highlighted_text").innerHTML = highlighted_text;
+            }
+
+            if (document.getElementById("score")) {
+                document.getElementById("score").value = score;
+            }
+        }
+
+    </script>
+</body>
+</html>
