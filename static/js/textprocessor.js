@@ -151,7 +151,7 @@ class TextProcessor {
     let highlightedText = "";
     highlightedText += `
       <details>
-        <summary><strong>Erro de ordem de sujeito, verbo e predicado!</strong></summary>
+        <summary><strong>Os periodos devem seguir a seguencia de sujeito verbo e predicado!</strong></summary>
     `;
     const paragraphs = this.text.split(/\n+/);
 
@@ -191,7 +191,7 @@ class TextProcessor {
     let highlightedText = "";
     highlightedText += `
       <details>
-        <summary><strong>Excesso de repetição de palavra por paragrafo!</strong></summary>
+        <summary><strong>Evite o excesso de repetição de palavras!</strong></summary>
     `;
     const paragraphs = this.text.split(/\n+/);
   
@@ -245,7 +245,7 @@ class TextProcessor {
     let highlightedText = "";
     highlightedText += `
     <details>
-      <summary><strong>Paragrafo deve ter de 7 a 10 linhas!</strong></summary>
+      <summary><strong>Padronize o tamanho dos paragrafos! (Paragrafos de 7 a 10 linhas)</strong></summary>
   `;
     const paragraphs = this.text.split(/\n+/);
 
