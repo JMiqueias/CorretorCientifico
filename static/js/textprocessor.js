@@ -21,12 +21,17 @@ class TextProcessor {
         for (let j = 0; j < sentences.length; j++) {
           const words = sentences[j].split(/\s+/);
           if (words.length >= 3) {
-            if (words[0].endsWith("o") || words[0].endsWith("a") || words[0].endsWith("os") || words[0].endsWith("as")) {
-              if (words[1].match(/^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i) && words[2].match(/^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i)) {
-                score -= 1;
-                foundErrors = true;
-                console.log(`Encontrado erro de ordem sujeito verbo predicado`);
-              }
+            const subject = words[0];
+            const verb = words[1];
+            const predicate = words.slice(2).join(' ');
+
+            const subjectRegex = /^(o|a|os|as)$/i;
+            const verbRegex = /^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i;
+
+            if (subjectRegex.test(subject.toLowerCase()) && verbRegex.test(verb.toLowerCase())) {
+              score -= 1;
+              foundErrors = true;
+              console.log(`Encontrado erro de ordem sujeito verbo predicado`);
             }
           }
         }
@@ -148,44 +153,44 @@ class TextProcessor {
   }
 
   getHighlightedTextSubjectVerbPredicateErrors() {
-    let highlightedText = "";
-    highlightedText += `
-      <details>
-        <summary><strong>Os periodos devem seguir a seguencia de sujeito verbo e predicado!</strong></summary>
-    `;
-    const paragraphs = this.text.split(/\n+/);
+  let highlightedText = `
+    <details>
+      <summary><strong>Os períodos devem seguir a sequência de sujeito, verbo e predicado!</strong></summary>
+  `;
+  const paragraphs = this.text.split(/\n+/);
 
-    for (let i = 0; i < paragraphs.length; i++) {
-      const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
-      const paragraphLength = paragraphs[i].length;
+  for (let i = 0; i < paragraphs.length; i++) {
+    const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
+    const paragraphLength = paragraphs[i].length;
 
-      if (sentences) {
-        highlightedText += "<p>";
-        for (let j = 0; j < sentences.length; j++) {
-          const words = sentences[j].split(/\s+/);
-          if (words.length >= 3) {
-            if (words[0].endsWith("o") || words[0].endsWith("a") || words[0].endsWith("os") || words[0].endsWith("as")) {
-              if (words[1].match(/^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i) && words[2].match(/^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i)) {
-                highlightedText += `<span class="error error-subject-verb-predicate">${sentences[j]}</span>`;
-                continue;
-              }
+    if (sentences) {
+      highlightedText += "<p>";
+      for (let j = 0; j < sentences.length; j++) {
+        const words = sentences[j].split(/\s+/);
+        if (words.length >= 3) {
+          if (words[0].endsWith("o") || words[0].endsWith("a") || words[0].endsWith("os") || words[0].endsWith("as")) {
+            if (words[1].match(/^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i) && words[2].match(/^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i)) {
+              highlightedText += `<span class="error error-subject-verb-predicate">${sentences[j]}</span>`;
+              continue;
             }
           }
-          highlightedText += sentences[j];
         }
-
-        highlightedText += "</p>";
-      } else {
-        highlightedText += "<p>" + paragraphs[i] + "</p>";
+        highlightedText += sentences[j];
       }
+
+      highlightedText += "</p>";
+    } else {
+      highlightedText += "<p>" + paragraphs[i] + "</p>";
     }
-
-    highlightedText += `
-      </details>
-    `;
-
-    return `<div style="text-align: justify">${highlightedText}</div>`;
   }
+
+  highlightedText += `
+    </details>
+  `;
+
+  return `<div style="text-align: justify">${highlightedText}</div>`;
+}
+
   
   getHighlightedTextRepeatedWords() {
     let highlightedText = "";
