@@ -12,7 +12,6 @@ class TextProcessor {
       const paragraphLength = paragraphs[i].length;
       if (paragraphLength < 580 || paragraphLength > 840) {
         foundErrors = true;
-        score -= 1;
         console.log(`Encontrado erro de tamanho de parágrafo`);
       }
   
