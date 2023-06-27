@@ -11,8 +11,8 @@ class TextProcessor {
     for (let i = 0; i < paragraphs.length; i++) {
       const paragraphLength = paragraphs[i].length;
       if (paragraphLength < 580 || paragraphLength > 840) {
-        //score -= 0.5;
         foundErrors = true;
+        score -= 1;
         console.log(`Encontrado erro de tamanho de parágrafo`);
       }
   
@@ -24,14 +24,37 @@ class TextProcessor {
             const subject = words[0];
             const verb = words[1];
             const predicate = words.slice(2).join(' ');
-
+  
             const subjectRegex = /^(o|a|os|as)$/i;
             const verbRegex = /^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i;
-
-            if (subjectRegex.test(subject.toLowerCase()) && verbRegex.test(verb.toLowerCase())) {
+  
+            if (
+              (subjectRegex.test(subject.toLowerCase()) && verbRegex.test(verb.toLowerCase())) ||
+              (/^eu$/i.test(subject) && !verbRegex.test(verb.toLowerCase())) ||
+              (/^(acredito|penso|acho)$/i.test(subject.toLowerCase()) && verb.toLowerCase() === 'que')
+            ) {
               score -= 1;
               foundErrors = true;
               console.log(`Encontrado erro de ordem sujeito verbo predicado`);
+            }
+  
+            if (!/,/.test(sentences[j]) && words.length >= 5) {
+              const commaIndex = words.findIndex(word => word.endsWith(','));
+              if (commaIndex === -1 || commaIndex !== words.length - 2) {
+                score -= 1;
+                foundErrors = true;
+                console.log(`Encontrado erro de uso de vírgula`);
+              }
+            }
+  
+            if (subjectRegex.test(subject.toLowerCase()) && verb.toLowerCase() === 'estar') {
+              const subjectIndex = words.findIndex(word => subjectRegex.test(word.toLowerCase()));
+              const verbIndex = words.findIndex(word => verb.toLowerCase() === word.toLowerCase());
+              if (verbIndex - subjectIndex > 2) {
+                score -= 1;
+                foundErrors = true;
+                console.log(`Encontrado erro de proximidade entre sujeito e verbo`);
+              }
             }
           }
         }
@@ -48,9 +71,9 @@ class TextProcessor {
     }
   
     const personalPronouns = ["eu", "meu", "minha", "meus", "minhas"];
-    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")})\\b`, "i");
+    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")}|acredito|penso|acho)\\b`, "i");
     if (personalSpeechRegex.test(this.text)) {
-      score -= 0.5;
+      score -= 1;
       foundErrors = true;
       console.log(`Encontrada fala pessoal`);
     }
@@ -64,22 +87,20 @@ class TextProcessor {
     for (let i = 0; i < repeatedWordsPerParagraph.length; i++) {
       const maxCount = Math.max(...Object.values(repeatedWordsPerParagraph[i]));
       if (maxCount > 5) {
-        score -= 0.5;
+        score -= 1;
         foundErrors = true;
         console.log(`Encontrada palavra repetida ${maxCount} vezes em um parágrafo`);
       }
     }
-
+  
     if (!foundErrors) {
-    console.log("Não foram encontrados erros.");
+      console.log("Não foram encontrados erros.");
     }
-    
+  
     return score;
   }
   
-
-
-
+  
 
   getHighlightedTextLongPeriods() {
     let highlightedText = "";
@@ -117,41 +138,47 @@ class TextProcessor {
   }    
 
   getHighlightedTextPersonalSpeech() {
-      let highlightedText = "";
-      highlightedText += `
+    let highlightedText = `
       <details>
-        <summary><strong>Evite usar forma pessoal de falar!</strong></summary>
+        <summary><strong>Evite usar a forma pessoal de falar!</strong></summary>
     `;
-      const personalPronouns = ["eu", "meu", "minha", "meus", "minhas"];
-      const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")})\\b`, "ig");
-      const paragraphs = this.text.split(/\n+/);
-    
-      for (let i = 0; i < paragraphs.length; i++) {
-        const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
-        let paragraphText = "";
-    
-        if (sentences) {
-          for (let j = 0; j < sentences.length; j++) {
-            const highlightedSentence = sentences[j].replace(personalSpeechRegex, (match) => {
-              return `<span class="error error-personal-speech">${match}</span>`;
-            });
-    
-            paragraphText += highlightedSentence;
+    const personalPronouns = ["eu", "meu", "minha", "meus", "minhas"];
+    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")})\\b`, "ig");
+    const paragraphs = this.text.split(/\n+/);
+  
+    for (let i = 0; i < paragraphs.length; i++) {
+      const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
+      let paragraphText = "";
+  
+      if (sentences) {
+        for (let j = 0; j < sentences.length; j++) {
+          const sentence = sentences[j];
+          const containsPersonalSpeech = personalSpeechRegex.test(sentence);
+  
+          let highlightedSentence = sentence;
+  
+          if (containsPersonalSpeech) {
+            highlightedSentence = highlightedSentence.replace(personalSpeechRegex, '<span class="error error-personal-speech">$&</span>');
           }
-        } else {
-          paragraphText = paragraphs[i];
+  
+          paragraphText += highlightedSentence;
         }
-    
-        highlightedText += `<p>${paragraphText}</p>`;
+      } else {
+        paragraphText = paragraphs[i];
       }
-
-      highlightedText += `
+  
+      highlightedText += `<p>${paragraphText}</p>`;
+    }
+  
+    highlightedText += `
       </details>
     `;
-    
-      return `<div style="text-align: justify">${highlightedText}</div>`;
+  
+    return `<div style="text-align: justify">${highlightedText}</div>`;
   }
-
+  
+  
+      
   getHighlightedTextSubjectVerbPredicateErrors() {
     let highlightedText = `
       <details>
@@ -174,7 +201,7 @@ class TextProcessor {
             const subjectRegex = /^(o|a|os|as)$/i;
             const verbRegex = /^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i;
   
-            if (subjectRegex.test(subject.toLowerCase()) && verbRegex.test(verb.toLowerCase())) {
+            if (!subjectRegex.test(subject.toLowerCase()) || !verbRegex.test(verb.toLowerCase())) {
               highlightedText += `<span class="error error-subject-verb-predicate">${sentences[j]}</span>`;
               continue;
             }
@@ -193,8 +220,8 @@ class TextProcessor {
     `;
   
     return `<div style="text-align: justify">${highlightedText}</div>`;
-  }  
-
+  }
+  
   
   getHighlightedTextRepeatedWords() {
     let highlightedText = "";
@@ -250,11 +277,92 @@ class TextProcessor {
     return `<div style="text-align: justify">${highlightedText}</div>`;
   }
 
+  getHighlightedTextCommaErrors() {
+    let highlightedText = `
+      <details>
+        <summary><strong>Utilização errada da vírgula!</strong></summary>
+    `;
+    const paragraphs = this.text.split(/\n+/);
+  
+    for (let i = 0; i < paragraphs.length; i++) {
+      const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
+      let paragraphText = "";
+  
+      if (sentences) {
+        for (let j = 0; j < sentences.length; j++) {
+          const words = sentences[j].split(/\s+/);
+          let highlightedSentence = sentences[j];
+  
+          if (!/,/.test(sentences[j]) && words.length >= 5) {
+            const commaIndex = words.findIndex(word => word.endsWith(','));
+            if (commaIndex === -1 || commaIndex !== words.length - 2) {
+              highlightedSentence = `<span class="error error-comma">${highlightedSentence}</span>`;
+            }
+          }
+  
+          paragraphText += highlightedSentence;
+        }
+      } else {
+        paragraphText = paragraphs[i];
+      }
+  
+      highlightedText += `<p>${paragraphText}</p>`;
+    }
+  
+    highlightedText += `
+      </details>
+    `;
+  
+    return `<div style="text-align: justify">${highlightedText}</div>`;
+  }
+  
+  getHighlightedTextSubjectVerbProximityErrors() {
+    let highlightedText = `
+      <details>
+        <summary><strong>O verbo deve se manter proximo do sujeito!</strong></summary>
+    `;
+    const paragraphs = this.text.split(/\n+/);
+  
+    for (let i = 0; i < paragraphs.length; i++) {
+      const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
+      let paragraphText = "";
+  
+      if (sentences) {
+        for (let j = 0; j < sentences.length; j++) {
+          const words = sentences[j].split(/\s+/);
+          const subjectRegex = /^(o|a|os|as)$/i;
+          const verb = words[1];
+  
+          if (subjectRegex.test(words[0].toLowerCase()) && verb.toLowerCase() === 'estar') {
+            const subjectIndex = words.findIndex(word => subjectRegex.test(word.toLowerCase()));
+            const verbIndex = words.findIndex(word => verb.toLowerCase() === word.toLowerCase());
+            if (verbIndex - subjectIndex > 2) {
+              paragraphText += `<span class="error error-subject-verb-proximity">${sentences[j]}</span>`;
+              continue;
+            }
+          }
+  
+          paragraphText += sentences[j];
+        }
+      } else {
+        paragraphText = paragraphs[i];
+      }
+  
+      highlightedText += `<p>${paragraphText}</p>`;
+    }
+  
+    highlightedText += `
+      </details>
+    `;
+  
+    return `<div style="text-align: justify">${highlightedText}</div>`;
+  }
+
   getHighlightedTextParagraphLength() {
     let highlightedText = "";
     highlightedText += `
     <details>
-      <summary><strong>Padronize o tamanho dos paragrafos! (Paragrafos de 7 a 10 linhas)</strong></summary>
+      <summary><strong><span class="warning">Warning!</span> Padronize o tamanho dos paragrafos! (Paragrafos de 7 a 10 linhas)</strong></summary>
   `;
     const paragraphs = this.text.split(/\n+/);
 

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "natural": "^6.5.0",
+    "retext": "^8.1.0"
+  }
+}

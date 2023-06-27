@@ -1,4 +1,8 @@
-.error-length {
+.error{
+  color: #f00;
+}
+
+/*.error-length {
   color: red;
 }
 
@@ -18,6 +22,18 @@
   color: crimson;
 }
 
+.error-comma{
+  color: lightslategray;
+} 
+
+.error-subject-verb-proximity{
+  color: darkslategray;
+}*/
+
+.warning {
+  color: goldenrod;
+}
+
 .error:before {
   display: inline-block;
   margin-right: 5px;
@@ -29,3 +45,13 @@
   text-shadow: 1px 1px #ddd;
   transform: translateY(-1px);
 }
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  max-width: 250px; /* Defina o tamanho máximo desejado para a imagem */
+  margin: 0 auto; /* Centraliza horizontalmente a div */
+  padding-top: 0px; /* Define o espaçamento superior desejado */
+  padding-bottom: 0px; /* Define o espaçamento inferior desejado */
+}
+
