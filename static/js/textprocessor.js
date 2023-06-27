@@ -143,7 +143,7 @@ class TextProcessor {
         <summary><strong>Evite usar a forma pessoal de falar!</strong></summary>
     `;
     const personalPronouns = ["eu", "meu", "minha", "meus", "minhas"];
-    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")})\\b`, "ig");
+    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")}|acredito|penso|acho)\\b`, "gi");
     const paragraphs = this.text.split(/\n+/);
   
     for (let i = 0; i < paragraphs.length; i++) {
@@ -153,14 +153,7 @@ class TextProcessor {
       if (sentences) {
         for (let j = 0; j < sentences.length; j++) {
           const sentence = sentences[j];
-          const containsPersonalSpeech = personalSpeechRegex.test(sentence);
-  
-          let highlightedSentence = sentence;
-  
-          if (containsPersonalSpeech) {
-            highlightedSentence = highlightedSentence.replace(personalSpeechRegex, '<span class="error error-personal-speech">$&</span>');
-          }
-  
+          let highlightedSentence = sentence.replace(personalSpeechRegex, '<span class="error error-personal-speech">$&</span>');
           paragraphText += highlightedSentence;
         }
       } else {
@@ -176,6 +169,7 @@ class TextProcessor {
   
     return `<div style="text-align: justify">${highlightedText}</div>`;
   }
+  
   
   
       
