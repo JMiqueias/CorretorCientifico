@@ -169,9 +169,6 @@ class TextProcessor {
   
     return `<div style="text-align: justify">${highlightedText}</div>`;
   }
-  
-  
-  
       
   getHighlightedTextSubjectVerbPredicateErrors() {
     let highlightedText = `
