@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from textprocessor import TextProcessor
 import json
 
 app = Flask(__name__)
@@ -9,7 +10,6 @@ def index():
     if request.method == 'POST':
         text = request.form['text']
         # cria um novo objeto TextProcessor com o texto fornecido
-        from textprocessor import TextProcessor
         tp = TextProcessor(text)
 
         # obtém a pontuação do texto e o texto com períodos longos destacados
