@@ -30,7 +30,7 @@ class TextProcessor {
             if (
               (subjectRegex.test(subject.toLowerCase()) && verbRegex.test(verb.toLowerCase())) ||
               (/^eu$/i.test(subject) && !verbRegex.test(verb.toLowerCase())) ||
-              (/^(acredito|penso|acho)$/i.test(subject.toLowerCase()) && verb.toLowerCase() === 'que')
+              (/^(acredito|penso|acho|suponho)$/i.test(subject.toLowerCase()) && verb.toLowerCase() === 'que')
             ) {
               score -= 1;
               foundErrors = true;
@@ -69,7 +69,7 @@ class TextProcessor {
       }
     }
   
-    const personalPronouns = ["eu", "meu", "minha", "meus", "minhas"];
+    const personalPronouns = ["eu", "meu", "minha", "meus", "minhas","nosso","nós"];
     const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")}|acredito|penso|acho)\\b`, "i");
     if (personalSpeechRegex.test(this.text)) {
       score -= 1;
@@ -141,8 +141,8 @@ class TextProcessor {
       <details>
         <summary><strong>Evite usar a forma pessoal de falar!</strong></summary>
     `;
-    const personalPronouns = ["eu", "meu", "minha", "meus", "minhas"];
-    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")}|acredito|penso|acho)\\b`, "gi");
+    const personalPronouns = ["eu", "meu", "minha", "meus", "minhas","nosso","nós"];
+    const personalSpeechRegex = new RegExp(`\\b(${personalPronouns.join("|")}|acredito|penso|acho|suponho)\\b`, "gi");
     const paragraphs = this.text.split(/\n+/);
   
     for (let i = 0; i < paragraphs.length; i++) {
