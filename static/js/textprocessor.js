@@ -46,14 +46,12 @@ class TextProcessor {
               }
             }
   
-            if (subjectRegex.test(subject.toLowerCase()) && verb.toLowerCase() === 'estar') {
-              const subjectIndex = words.findIndex(word => subjectRegex.test(word.toLowerCase()));
-              const verbIndex = words.findIndex(word => verb.toLowerCase() === word.toLowerCase());
-              if (verbIndex - subjectIndex > 2) {
-                score -= 1;
-                foundErrors = true;
-                console.log(`Encontrado erro de proximidade entre sujeito e verbo`);
-              }
+            const subjectIndex = words.findIndex(word => subjectRegex.test(word.toLowerCase()));
+            const verbIndex = words.findIndex(word => verbRegex.test(word.toLowerCase()));
+            if (verbIndex - subjectIndex > 2) {
+              score -= 1;
+              foundErrors = true;
+              console.log(`Encontrado erro de proximidade entre sujeito e verbo`);
             }
           }
         }
@@ -307,46 +305,58 @@ class TextProcessor {
   }
   
   getHighlightedTextSubjectVerbProximityErrors() {
-    let highlightedText = `
-      <details>
-        <summary><strong>O verbo deve se manter proximo do sujeito!</strong></summary>
-    `;
-    const paragraphs = this.text.split(/\n+/);
-  
-    for (let i = 0; i < paragraphs.length; i++) {
-      const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
-      let paragraphText = "";
-  
-      if (sentences) {
-        for (let j = 0; j < sentences.length; j++) {
-          const words = sentences[j].split(/\s+/);
-          const subjectRegex = /^(o|a|os|as)$/i;
-          const verb = words[1];
-  
-          if (subjectRegex.test(words[0].toLowerCase()) && verb.toLowerCase() === 'estar') {
-            const subjectIndex = words.findIndex(word => subjectRegex.test(word.toLowerCase()));
-            const verbIndex = words.findIndex(word => verb.toLowerCase() === word.toLowerCase());
-            if (verbIndex - subjectIndex > 2) {
-              paragraphText += `<span class="error error-subject-verb-proximity">${sentences[j]}</span>`;
-              continue;
-            }
+  let highlightedText = `
+    <details>
+      <summary><strong>O verbo deve se manter próximo do sujeito!</strong></summary>
+  `;
+  const paragraphs = this.text.split(/\n+/);
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const sentences = paragraphs[i].match(/[^.!?:]+[.!?:]+/g);
+    let paragraphText = "";
+
+    if (sentences) {
+      for (let j = 0; j < sentences.length; j++) {
+        const words = sentences[j].split(/\s+/);
+        const subject = words[0];
+        const verb = words[1];
+
+        const subjectRegex = /^(o|a|os|as)$/i;
+        const verbRegex = /^[a-záéíóúãẽĩõũâêîôûàèìòùç]+$/i;
+
+        if (
+          (subjectRegex.test(subject.toLowerCase()) && verbRegex.test(verb.toLowerCase())) ||
+          (/^eu$/i.test(subject) && !verbRegex.test(verb.toLowerCase())) ||
+          (/^(acredito|penso|acho|suponho)$/i.test(subject.toLowerCase()) && verb.toLowerCase() === 'que')
+        ) {
+          const subjectIndex = words.findIndex(word => subjectRegex.test(word.toLowerCase()));
+          const verbIndex = words.findIndex(word => verbRegex.test(word.toLowerCase()));
+          if (verbIndex - subjectIndex > 2) {
+            const highlightedSentence = sentences[j].replace(
+              verb,
+              `<span class="error error-subject-verb-proximity">${verb}</span>`
+            );
+            paragraphText += `${highlightedSentence}`;
+            continue;
           }
-  
-          paragraphText += sentences[j];
         }
-      } else {
-        paragraphText = paragraphs[i];
+
+        paragraphText += sentences[j];
       }
-  
-      highlightedText += `<p>${paragraphText}</p>`;
+    } else {
+      paragraphText = paragraphs[i];
     }
-  
-    highlightedText += `
-      </details>
-    `;
-  
-    return `<div style="text-align: justify">${highlightedText}</div>`;
+
+    highlightedText += `<p>${paragraphText}</p>`;
   }
+
+  highlightedText += `
+    </details>
+  `;
+
+  return `<div style="text-align: justify">${highlightedText}</div>`;
+}
+
 
   getHighlightedTextParagraphLength() {
     let highlightedText = "";
